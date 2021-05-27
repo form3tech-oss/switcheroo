@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.name }}
+  labels:
+{{ include "labels.standard" . | indent 4 }}
+spec:
+  replicas: {{ .Values.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Values.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.name }}
+    spec:
+      serviceAccountName: {{ .Values.name }}
+      containers:
+        - name: switcheroo
+          {{ if .Values.image.version -}}
+          image: {{ .Values.image.name }}:{{ .Values.image.version }}
+          {{ else -}}
+          image: {{ .Values.image.name }}:{{ .Chart.Version }}
+          {{ end -}}
+          ports:
+            - containerPort: {{ .Values.port }}
+          volumeMounts:
+            - mountPath: {{ .Values.cert.directory }}
+              name: cert
+              readOnly: true
+          env:
+            - name: CERT_DIRECTORY
+              value: {{ .Values.cert.directory }}
+            - name: NEW_REGISTRY_HOST
+              value: {{ .Values.newRegistryHost }}
+            - name: WEBHOOK_PORT
+              value: {{ .Values.port | quote }}
+      volumes:
+        - name: cert
+          secret:
+            defaultMode: 420
+            secretName: {{ .Values.name }}-crt-secret

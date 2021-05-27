@@ -1,0 +1,14 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: {{ .Values.name }}
+  labels:
+{{ include "labels.standard" . | indent 4 }}
+spec:
+  selector:
+    app: {{ .Values.name }}
+  ports:
+  - name: https
+    protocol: TCP
+    port: {{ .Values.port }}
+    targetPort: {{ .Values.port }}

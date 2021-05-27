@@ -1,0 +1,21 @@
+name: switcheroo
+port: 9543
+replicas: 2
+
+# set you registry host
+newRegistryHost:
+
+cert:
+  directory: /tmp/certs
+
+image:
+# todo add form3 public docker hub repo
+  name: /switcheroo
+# if version not set chart version is used
+  version:
+
+podDisruptionBudget:
+  minAvailable: 1
+
+webhook:
+  timeoutSeconds: 10
