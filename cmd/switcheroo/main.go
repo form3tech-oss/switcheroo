@@ -43,12 +43,24 @@ func main() {
 	} else {
 		appPort = DefaultPort
 	}
+	metricsBindAddress, ok := os.LookupEnv("METRICS_BIND_ADDRESS")
+	if !ok {
+		entryLog.Error(errors.New("METRICS_BIND_ADDRESS is not set"), "")
+		os.Exit(1)
+	}
+	healthProbeBindAddress, ok := os.LookupEnv("HEALTH_PROBE_BIND_ADDRESS")
+	if !ok {
+		entryLog.Error(errors.New("HEALTH_PROBE_BIND_ADDRESS is not set"), "")
+		os.Exit(1)
+	}
 
 	entryLog.Info("setting up manager")
 	manager, err := app.NewRegistryHostMutatorManager(config.GetConfigOrDie(), manager.Options{
-		Port:    appPort,
-		Logger:  entryLog,
-		CertDir: certDirectory,
+		Port:                   appPort,
+		Logger:                 entryLog,
+		CertDir:                certDirectory,
+		MetricsBindAddress:     metricsBindAddress,
+		HealthProbeBindAddress: healthProbeBindAddress,
 	}, newRegistryHost)
 	if err != nil {
 		entryLog.Error(err, "")

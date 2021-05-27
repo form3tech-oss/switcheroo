@@ -2,15 +2,20 @@ name: switcheroo
 port: 9543
 replicas: 2
 
-# set you registry host
+# set your target source registry host.
 newRegistryHost:
+
+metricsBindPort: 9553
+metricsBindHost: "0.0.0.0"
+healthProbeBindPort: 9563
+healthProbeBindHost: "0.0.0.0"
 
 cert:
   directory: /tmp/certs
 
+# switcheroo image name and version from you local repository
 image:
-# todo add form3 public docker hub repo
-  name: /switcheroo
+  name:
 # if version not set chart version is used
   version:
 

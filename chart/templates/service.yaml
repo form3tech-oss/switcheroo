@@ -12,3 +12,7 @@ spec:
     protocol: TCP
     port: {{ .Values.port }}
     targetPort: {{ .Values.port }}
+  - name: metrics
+    protocol: TCP
+    port: {{ .Values.metricsBindPort }}
+    targetPort: {{ .Values.metricsBindPort }}

@@ -25,24 +25,30 @@ prepare-testenv-binaries:
 	rm envtest-bins.tar.gz
 
 # Run tests
+.PHONY: test
 test: prepare-testenv-binaries fmt vet
 	go test ./...
 
 # Run go fmt against code
+.PHONY: fmt
 fmt:
 	go fmt ./...
 
 # Run go vet against code
+.PHONY: vet
 vet:
 	go vet ./...
 
 # Generate code
+.PHONY: generate
 generate: controller-gen
 	$(CONTROLLER_GEN) object:headerFile=./hack/boilerplate.go.txt paths=./api/...
 
-build: test
+.PHONY: build
+build:
 	go build ./cmd/switcheroo/main.go
 
+.PHONY: docker-build
 docker-build: build
 	docker build . -t switcheroo:latest
 
