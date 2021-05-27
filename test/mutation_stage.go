@@ -80,8 +80,7 @@ func updateImageOfPod(pod *v1.Pod) *v1.Pod {
 }
 
 func testPodWithName(name string) func() *v1.Pod {
-	var f func() *v1.Pod
-	f = func() *v1.Pod {
+	f := func() *v1.Pod {
 		pod := v1.Pod{
 			ObjectMeta: metav1.ObjectMeta{
 				Namespace: "default",

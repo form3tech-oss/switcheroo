@@ -23,7 +23,12 @@ spec:
           image: {{ .Values.image.name }}:{{ .Chart.Version }}
           {{ end -}}
           ports:
-            - containerPort: {{ .Values.port }}
+            - name: service
+              containerPort: {{ .Values.port }}
+            - name: metrics
+              containerPort: {{ .Values.metricsBindPort }}
+            - name: health-probe
+              containerPort: {{ .Values.healthProbeBindPort }}
           volumeMounts:
             - mountPath: {{ .Values.cert.directory }}
               name: cert
@@ -35,6 +40,22 @@ spec:
               value: {{ .Values.newRegistryHost }}
             - name: WEBHOOK_PORT
               value: {{ .Values.port | quote }}
+            - name: METRICS_BIND_ADDRESS
+              value: {{ .Values.metricsBindHost }}:{{ .Values.metricsBindPort }}
+            - name: HEALTH_PROBE_BIND_ADDRESS
+              value: {{ .Values.healthProbeBindHost }}:{{ .Values.healthProbeBindPort }}
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: health-probe
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: health-probe
+            initialDelaySeconds: 10
+            periodSeconds: 5
       volumes:
         - name: cert
           secret:

@@ -31,12 +31,12 @@ func (p *podMutator) Handle(ctx context.Context, request admission.Request) admi
 		return admission.Errored(http.StatusBadRequest, err)
 	}
 
-	for i, _ := range pod.Spec.InitContainers {
+	for i := range pod.Spec.InitContainers {
 		replacedImage := replaceImageRegistryHost(p.newRegistryHost, pod.Spec.InitContainers[i].Image)
 		pod.Spec.InitContainers[i].Image = replacedImage
 	}
 
-	for i, _ := range pod.Spec.Containers {
+	for i := range pod.Spec.Containers {
 		replacedImage := replaceImageRegistryHost(p.newRegistryHost, pod.Spec.Containers[i].Image)
 		pod.Spec.Containers[i].Image = replacedImage
 	}
@@ -55,6 +55,9 @@ func (p *podMutator) InjectDecoder(d *admission.Decoder) error {
 }
 
 func replaceImageRegistryHost(newRegistryHost string, image string) string {
+	if strings.HasPrefix(image, newRegistryHost) {
+		return image
+	}
 	registryHostPattern := `(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z0-9][a-z0-9-]{0,61}[a-z0-9]`
 	m := regexp.MustCompile(registryHostPattern)
 	replaced := m.ReplaceAllString(image, newRegistryHost)

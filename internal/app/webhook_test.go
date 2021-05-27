@@ -6,26 +6,33 @@ import (
 )
 
 func TestReplaceImageRegistryHost(t *testing.T) {
-
 	type testCase struct {
-		inputImage    string
-		expectedImage string
+		name            string
+		inputImage      string
+		expectedImage   string
+		replacementHost string
 	}
-
-	newRegistryHost := "xxx.dkr.ecr.eu-west-1.amazonaws.com"
-
+	awsRegistryHost := "xxx.dkr.ecr.eu-west-1.amazonaws.com"
+	pathBasedRegistryHost := "foo.com/images"
 	testCases := []testCase{
-		{inputImage: "centos:8", expectedImage: "xxx.dkr.ecr.eu-west-1.amazonaws.com/centos:8"},
-		{inputImage: "xxx.dkr.ecr.eu-west-1.amazonaws.com/centos:8", expectedImage: "xxx.dkr.ecr.eu-west-1.amazonaws.com/centos:8"},
-		{inputImage: "cr.l5d.io/linkerd/controller:stable-2.9.5", expectedImage: "xxx.dkr.ecr.eu-west-1.amazonaws.com/linkerd/controller:stable-2.9.5"},
-		{inputImage: "docker.io/amazon/aws-alb-ingress-controller:v1.1.5", expectedImage: "xxx.dkr.ecr.eu-west-1.amazonaws.com/amazon/aws-alb-ingress-controller:v1.1.5"},
-		{inputImage: "quay.io/jetstack/cert-manager-controller:v1.1.1", expectedImage: "xxx.dkr.ecr.eu-west-1.amazonaws.com/jetstack/cert-manager-controller:v1.1.1"},
-		{inputImage: "k8s.gcr.io/metrics-server-amd64:v0.3.6", expectedImage: "xxx.dkr.ecr.eu-west-1.amazonaws.com/metrics-server-amd64:v0.3.6"},
+		{name: "replacing image that has no registry host with standard registry host", replacementHost: awsRegistryHost,
+			inputImage: "centos:8", expectedImage: "xxx.dkr.ecr.eu-west-1.amazonaws.com/centos:8"},
+		{name: "replacing image that has no registry host with path based registry host", replacementHost: pathBasedRegistryHost,
+			inputImage: "centos:8", expectedImage: "foo.com/images/centos:8"},
+		{name: "replacing image that has the same standard registry host", replacementHost: awsRegistryHost,
+			inputImage: "xxx.dkr.ecr.eu-west-1.amazonaws.com/centos:8", expectedImage: "xxx.dkr.ecr.eu-west-1.amazonaws.com/centos:8"},
+		{name: "replacing image that has the same path based registry host", replacementHost: pathBasedRegistryHost,
+			inputImage: "foo.com/images/centos:8", expectedImage: "foo.com/images/centos:8"},
+		{name: "replacing image that has different registry host with standard registry host", replacementHost: awsRegistryHost,
+			inputImage: "cr.l5d.io/linkerd/controller:stable-2.9.5", expectedImage: "xxx.dkr.ecr.eu-west-1.amazonaws.com/linkerd/controller:stable-2.9.5"},
+		{name: "replacing image that has different registry host with path based registry host", replacementHost: pathBasedRegistryHost,
+			inputImage: "cr.l5d.io/linkerd/controller:stable-2.9.5", expectedImage: "foo.com/images/linkerd/controller:stable-2.9.5"},
 	}
 
 	for _, tc := range testCases {
-		actualImage := replaceImageRegistryHost(newRegistryHost, tc.inputImage)
-		assert.Equal(t, tc.expectedImage, actualImage)
+		t.Run(tc.name, func(t *testing.T) {
+			actualImage := replaceImageRegistryHost(tc.replacementHost, tc.inputImage)
+			assert.Equal(t, tc.expectedImage, actualImage)
+		})
 	}
-
 }
