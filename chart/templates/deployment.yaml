@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.name }}
+  labels:
+{{ include "labels.standard" . | indent 4 }}
+spec:
+  replicas: {{ .Values.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Values.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.name }}
+    spec:
+      serviceAccountName: {{ .Values.name }}
+      containers:
+        - name: switcheroo
+          {{ if .Values.image.version -}}
+          image: {{ .Values.image.name }}:{{ .Values.image.version }}
+          {{ else -}}
+          image: {{ .Values.image.name }}:{{ .Chart.Version }}
+          {{ end -}}
+          ports:
+            - name: service
+              containerPort: {{ .Values.port }}
+            - name: metrics
+              containerPort: {{ .Values.metricsBindPort }}
+            - name: health-probe
+              containerPort: {{ .Values.healthProbeBindPort }}
+          volumeMounts:
+            - mountPath: {{ .Values.cert.directory }}
+              name: cert
+              readOnly: true
+          env:
+            - name: CERT_DIRECTORY
+              value: {{ .Values.cert.directory }}
+            - name: NEW_REGISTRY_HOST
+              value: {{ .Values.newRegistryHost }}
+            - name: WEBHOOK_PORT
+              value: {{ .Values.port | quote }}
+            - name: METRICS_BIND_ADDRESS
+              value: {{ .Values.metricsBindHost }}:{{ .Values.metricsBindPort }}
+            - name: HEALTH_PROBE_BIND_ADDRESS
+              value: {{ .Values.healthProbeBindHost }}:{{ .Values.healthProbeBindPort }}
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: health-probe
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: health-probe
+            initialDelaySeconds: 10
+            periodSeconds: 5
+      volumes:
+        - name: cert
+          secret:
+            defaultMode: 420
+            secretName: {{ .Values.name }}-crt-secret

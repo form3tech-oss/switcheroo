@@ -1,0 +1,26 @@
+name: switcheroo
+port: 9543
+replicas: 2
+
+# set your target source registry host.
+newRegistryHost:
+
+metricsBindPort: 9553
+metricsBindHost: "0.0.0.0"
+healthProbeBindPort: 9563
+healthProbeBindHost: "0.0.0.0"
+
+cert:
+  directory: /tmp/certs
+
+# switcheroo image name and version from you local repository
+image:
+  name:
+# if version not set chart version is used
+  version:
+
+podDisruptionBudget:
+  minAvailable: 1
+
+webhook:
+  timeoutSeconds: 10
