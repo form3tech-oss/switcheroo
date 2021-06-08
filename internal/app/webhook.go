@@ -3,10 +3,9 @@ package app
 import (
 	"context"
 	"encoding/json"
-	"fmt"
+	"github.com/davecgh/go-spew/spew"
 	corev1 "k8s.io/api/core/v1"
 	"net/http"
-	"regexp"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 	"strings"
@@ -58,11 +57,10 @@ func replaceImageRegistryHost(newRegistryHost string, image string) string {
 	if strings.HasPrefix(image, newRegistryHost) {
 		return image
 	}
-	registryHostPattern := `(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z0-9][a-z0-9-]{0,61}[a-z0-9]`
-	m := regexp.MustCompile(registryHostPattern)
-	replaced := m.ReplaceAllString(image, newRegistryHost)
-	if !strings.HasPrefix(replaced, newRegistryHost) {
-		return fmt.Sprintf("%s/%s", newRegistryHost, image)
+	slashIndex := strings.Index(image, "/")
+	if slashIndex > -1 {
+		return spew.Sprintf("%s/%s", newRegistryHost, image[slashIndex+1:])
+	} else {
+		return spew.Sprintf("%s/%s", newRegistryHost, image)
 	}
-	return replaced
 }
