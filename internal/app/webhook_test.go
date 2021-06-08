@@ -27,6 +27,8 @@ func TestReplaceImageRegistryHost(t *testing.T) {
 			inputImage: "cr.l5d.io/linkerd/controller:stable-2.9.5", expectedImage: "xxx.dkr.ecr.eu-west-1.amazonaws.com/linkerd/controller:stable-2.9.5"},
 		{name: "replacing image that has different registry host with path based registry host", replacementHost: pathBasedRegistryHost,
 			inputImage: "cr.l5d.io/linkerd/controller:stable-2.9.5", expectedImage: "foo.com/images/linkerd/controller:stable-2.9.5"},
+		{name: "replacing image that has different registry host with standard registry with double digit number in version", replacementHost: awsRegistryHost,
+			inputImage: "cr.l5d.io/linkerd/controller:stable-2.10.2", expectedImage: "xxx.dkr.ecr.eu-west-1.amazonaws.com/linkerd/controller:stable-2.10.2"},
 	}
 
 	for _, tc := range testCases {
