@@ -6,6 +6,7 @@ import (
 	"github.com/davecgh/go-spew/spew"
 	corev1 "k8s.io/api/core/v1"
 	"net/http"
+	"regexp"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 	"strings"
@@ -58,9 +59,22 @@ func replaceImageRegistryHost(newRegistryHost string, image string) string {
 		return image
 	}
 	slashIndex := strings.Index(image, "/")
-	if slashIndex > -1 {
+
+	if slashIndex == -1 {
+		return spew.Sprintf("%s/%s", newRegistryHost, image)
+	}
+
+	domain := image[0:slashIndex]
+
+	if isDomain(domain) {
 		return spew.Sprintf("%s/%s", newRegistryHost, image[slashIndex+1:])
 	} else {
 		return spew.Sprintf("%s/%s", newRegistryHost, image)
 	}
+}
+
+func isDomain(value string) bool {
+	domainMatchingPattern := `^(([a-zA-Z]{1})|([a-zA-Z]{1}[a-zA-Z]{1})|([a-zA-Z]{1}[0-9]{1})|([0-9]{1}[a-zA-Z]{1})|([a-zA-Z0-9][a-zA-Z0-9-_]{1,61}[a-zA-Z0-9]))\.([a-zA-Z]{2,6}|[a-zA-Z0-9-]{2,30}\.[a-zA-Z]{2,3})$`
+	expression := regexp.MustCompile(domainMatchingPattern)
+	return expression.MatchString(value)
 }
