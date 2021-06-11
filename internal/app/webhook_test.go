@@ -1,6 +1,7 @@
 package app
 
 import (
+	"fmt"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -35,7 +36,8 @@ func TestReplaceImageRegistryHost(t *testing.T) {
 			inputImage: "kiwigrid/k8s-sidecar:0.1.151", expectedImage: "xxx.dkr.ecr.eu-west-1.amazonaws.com/kiwigrid/k8s-sidecar:0.1.151"},
 		{name: "replacing image that has no registry host and a sub path with path based registry host", replacementHost: pathBasedRegistryHost,
 			inputImage: "kiwigrid/k8s-sidecar:0.1.151", expectedImage: "foo.com/images/kiwigrid/k8s-sidecar:0.1.151"},
-
+		{name: "replacing image that has a registry host in a different AWS region", replacementHost: awsRegistryHost,
+			inputImage: "yyy.dkr.ecr.eu-west-2.amazonaws.com/openzipkin/zipkin-aws:0.21.2", expectedImage: fmt.Sprint(awsRegistryHost, "/openzipkin/zipkin-aws:0.21.2")},
 	}
 
 	for _, tc := range testCases {
