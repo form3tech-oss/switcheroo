@@ -28,6 +28,7 @@ jobs:
         - unzip awscliv2.zip && rm awscliv2.zip
         - sudo ./aws/install
         - aws ecr get-login-password --region eu-west-1 | docker login --username AWS --password-stdin ${DOCKER_REPO_HOST}
+        - aws ecr get-login-password --region eu-west-2 | docker login --username AWS --password-stdin ${DOCKER_REPO_HOST_2}
       script:
         - docker run --rm -e AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY -v $(pwd):/workspace
             ${DOCKER_REPO_HOST}/tech.form3/mage-targets/chart-repo:latest
@@ -35,6 +36,8 @@ jobs:
         - make docker-build
         - docker image tag switcheroo:latest ${DOCKER_REPO_HOST}/tech.form3/switcheroo:${RELEASE_VERSION}
         - docker push ${DOCKER_REPO_HOST}/tech.form3/switcheroo:${RELEASE_VERSION}
+        - docker image tag switcheroo:latest ${DOCKER_REPO_HOST_2}/tech.form3/switcheroo:${RELEASE_VERSION}
+        - docker push ${DOCKER_REPO_HOST_2}/tech.form3/switcheroo:${RELEASE_VERSION}
 
     - stage: publish
       name: Publish
