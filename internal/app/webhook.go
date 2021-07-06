@@ -4,9 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/dlclark/regexp2"
 	corev1 "k8s.io/api/core/v1"
 	"net/http"
-	"regexp"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 	"strings"
@@ -58,11 +58,26 @@ func replaceImageRegistryHost(newRegistryHost string, image string) string {
 	if strings.HasPrefix(image, newRegistryHost) {
 		return image
 	}
-	registryHostPattern := `(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z0-9][a-z0-9-]{0,61}[a-z0-9]`
-	m := regexp.MustCompile(registryHostPattern)
-	replaced := m.ReplaceAllString(image, newRegistryHost)
-	if !strings.HasPrefix(replaced, newRegistryHost) {
+	slashIndex := strings.Index(image, "/")
+
+	if slashIndex == -1 {
 		return fmt.Sprintf("%s/%s", newRegistryHost, image)
 	}
-	return replaced
+
+	domain := image[0:slashIndex]
+
+	if isDomain(domain) {
+		return fmt.Sprintf("%s/%s", newRegistryHost, image[slashIndex+1:])
+	} else {
+		return fmt.Sprintf("%s/%s", newRegistryHost, image)
+	}
+}
+
+func isDomain(value string) bool {
+	// https://www.oreilly.com/library/view/regular-expressions-cookbook/9781449327453/ch08s15.html
+	domainMatchingPattern := `^((?=[a-z0-9-]{1,63}\.)(xn--)?[a-z0-9]+(-[a-z0-9]+)*\.)+[a-z]{2,63}$`
+	// regexp2 allows for a positive lookahead so we can make sure each part of the domain is 1 to 63 characters as per spec
+	expression := regexp2.MustCompile(domainMatchingPattern, regexp2.None)
+	isMatch, _ := expression.MatchString(value)
+	return isMatch
 }

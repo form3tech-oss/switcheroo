@@ -4,6 +4,7 @@ go 1.16
 
 require (
 	github.com/avast/retry-go v3.0.0+incompatible
+	github.com/dlclark/regexp2 v1.4.0
 	github.com/go-logr/logr v0.4.0
 	github.com/stretchr/testify v1.7.0
 	k8s.io/api v0.20.2
