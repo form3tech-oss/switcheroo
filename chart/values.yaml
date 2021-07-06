@@ -24,3 +24,5 @@ podDisruptionBudget:
 
 webhook:
   timeoutSeconds: 10
+
+hostNetwork: false
